@@ -22,3 +22,9 @@ variable "owner" {
   type        = string
   default     = "cloudops-intern"
 }
+
+variable "enable_nat_gateway" {
+  description = "Enable NAT Gateway for private subnet outbound access"
+  type        = bool
+  default     = false
+}
