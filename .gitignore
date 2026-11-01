@@ -1,24 +1,25 @@
-# Python virtual environment
+# Python environment
 .venv/
-
-# Python temporary files
 __pycache__/
 *.pyc
+app_backup.py
 
 # Local databases
 *.db
 *.sqlite3
 
-# Credentials and environment variables
+# Credentials
 .env
 .env.*
+*.pem
+*.key
 
-# Terraform local files and sensitive state
+# Terraform
 .terraform/
 *.tfstate
 *.tfstate.*
 *.tfvars
 *.tfplan
 
-# VS Code local settings
+# Local VS Code settings
 .vscode/
