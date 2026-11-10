@@ -1,79 +1,60 @@
 
-# ==========================================
-# T02 - AWS VPC AND NETWORKING
-# ==========================================
-
-# Get available Availability Zones
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
-# Define four subnets
-locals {
-  subnets = {
-    public_a = {
-      cidr     = "10.20.1.0/24"
-      az_index = 0
-      public   = true
-    }
-
-    public_b = {
-      cidr     = "10.20.2.0/24"
-      az_index = 1
-      public   = true
-    }
-
-    private_a = {
-      cidr     = "10.20.11.0/24"
-      az_index = 0
-      public   = false
-    }
-
-    private_b = {
-      cidr     = "10.20.12.0/24"
-      az_index = 1
-      public   = false
-    }
-  }
-}
-
-# Create VPC
+# New VPC for the Life Sciences project
 resource "aws_vpc" "main" {
-  cidr_block           = "10.20.0.0/16"
+  cidr_block           = "10.30.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name = "${var.project_name}-vpc"
+    Name = "LifeSciences-VPC"
   }
 }
 
-# Create two public and two private subnets
-resource "aws_subnet" "subnets" {
-  for_each = local.subnets
+# Two new public subnets
+resource "aws_subnet" "public" {
+  for_each = {
+    a = { cidr = "10.30.1.0/24", az = "ap-southeast-2a" }
+    b = { cidr = "10.30.2.0/24", az = "ap-southeast-2b" }
+  }
 
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = each.value.cidr
-  availability_zone = data.aws_availability_zones.available.names[each.value.az_index]
-
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = each.value.cidr
+  availability_zone       = each.value.az
   map_public_ip_on_launch = false
 
   tags = {
-    Name = "${var.project_name}-${each.key}"
-    Tier = each.value.public ? "public" : "private"
+    Name = "LifeSciences-Public-${each.key}"
+    Tier = "public"
   }
 }
 
-# Internet Gateway
+# Two new private subnets
+resource "aws_subnet" "private" {
+  for_each = {
+    a = { cidr = "10.30.11.0/24", az = "ap-southeast-2a" }
+    b = { cidr = "10.30.12.0/24", az = "ap-southeast-2b" }
+  }
+
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = each.value.cidr
+  availability_zone = each.value.az
+
+  tags = {
+    Name = "LifeSciences-Private-${each.key}"
+    Tier = "private"
+  }
+}
+
+# New Internet Gateway
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "${var.project_name}-igw"
+    Name = "LifeSciences-IGW"
   }
 }
 
-# Public Route Table
+# Public routing to the internet
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
@@ -83,71 +64,58 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "${var.project_name}-public-rt"
+    Name = "LifeSciences-Public-RT"
   }
 }
 
-# Associate public subnets with public route table
 resource "aws_route_table_association" "public" {
-  for_each = {
-    for name, subnet in local.subnets :
-    name => subnet if subnet.public
-  }
-
-  subnet_id      = aws_subnet.subnets[each.key].id
+  for_each       = aws_subnet.public
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.public.id
 }
 
-# NAT Gateway Elastic IP
-resource "aws_eip" "nat" {
-  count = var.enable_nat_gateway ? 1 : 0
-
-  domain = "vpc"
+# Private routing - no NAT Gateway
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "${var.project_name}-nat-eip"
+    Name = "LifeSciences-Private-RT"
   }
 }
 
-# NAT Gateway (disabled by default)
-resource "aws_nat_gateway" "main" {
-  count = var.enable_nat_gateway ? 1 : 0
+resource "aws_route_table_association" "private" {
+  for_each       = aws_subnet.private
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.private.id
+}
 
+# NAT Gateway public IP
+resource "aws_eip" "nat" {
+  count  = var.enable_nat_gateway ? 1 : 0
+  domain = "vpc"
+
+  tags = {
+    Name = "LifeSciences-NAT-EIP"
+  }
+}
+
+# NAT Gateway in public subnet A
+resource "aws_nat_gateway" "main" {
+  count         = var.enable_nat_gateway ? 1 : 0
   allocation_id = aws_eip.nat[0].id
-  subnet_id     = aws_subnet.subnets["public_a"].id
+  subnet_id     = aws_subnet.public["a"].id
 
   depends_on = [aws_internet_gateway.main]
 
   tags = {
-    Name = "${var.project_name}-nat"
+    Name = "LifeSciences-NAT"
   }
 }
 
-# Private Route Table
-resource "aws_route_table" "private" {
-  vpc_id = aws_vpc.main.id
-
-  dynamic "route" {
-    for_each = var.enable_nat_gateway ? [1] : []
-
-    content {
-      cidr_block     = "0.0.0.0/0"
-      nat_gateway_id = aws_nat_gateway.main[0].id
-    }
-  }
-
-  tags = {
-    Name = "${var.project_name}-private-rt"
-  }
-}
-
-# Associate private subnets with private route table
-resource "aws_route_table_association" "private" {
-  for_each = {
-    for name, subnet in local.subnets :
-    name => subnet if !subnet.public
-  }
-
-  subnet_id      = aws_subnet.subnets[each.key].id
-  route_table_id = aws_route_table.private.id
+# Allow private subnets to reach the internet through NAT
+resource "aws_route" "private_nat" {
+  count                  = var.enable_nat_gateway ? 1 : 0
+  route_table_id         = aws_route_table.private.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.main[0].id
 }
