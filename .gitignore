@@ -1,0 +1,25 @@
+# Python environment
+.venv/
+__pycache__/
+*.pyc
+app_backup.py
+
+# Local databases
+*.db
+*.sqlite3
+
+# Credentials
+.env
+.env.*
+*.pem
+*.key
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfplan
+
+# Local VS Code settings
+.vscode/
