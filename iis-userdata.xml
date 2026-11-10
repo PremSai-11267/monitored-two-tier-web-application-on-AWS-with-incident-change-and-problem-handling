@@ -1,0 +1,193 @@
+<powershell>
+$ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
+
+$root = 'C:\LifeSciences'
+$appDir = "$root\SampleTracker"
+$installDir = "$root\Installers"
+$pythonDir = "$root\Python313"
+
+New-Item -ItemType Directory -Force -Path $appDir,$installDir | Out-Null
+
+# Restore embedded application package
+$encoded = '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'
+$zip = "$appDir\lifesciences-app.zip"
+[IO.File]::WriteAllBytes($zip,[Convert]::FromBase64String($encoded))
+
+if ((Get-FileHash $zip -Algorithm SHA256).Hash -ne '82B5CE61023E69F23E473CD54F44D60BA486163A46C9A03324F2F41AB6AEA8DB') {
+    throw 'Application ZIP checksum mismatch'
+}
+
+Expand-Archive -Path $zip -DestinationPath $appDir -Force
+
+# Download only verified software
+function Get-VerifiedInstaller($url,$path,$hash) {
+    Invoke-WebRequest -Uri $url -OutFile $path -UseBasicParsing
+
+    if ((Get-FileHash $path -Algorithm SHA256).Hash -ne $hash) {
+        throw "Installer checksum failed: $path"
+    }
+
+    if ((Get-AuthenticodeSignature $path).Status -ne 'Valid') {
+        throw "Installer signature invalid: $path"
+    }
+}
+
+# Install IIS
+Install-WindowsFeature Web-Server -IncludeManagementTools | Out-Null
+Set-Service W3SVC -StartupType Automatic
+Start-Service W3SVC
+
+Set-Content 'C:\inetpub\wwwroot\index.html' `
+    -Value '<h1>Life Sciences - IIS is running</h1>'
+
+# Install Python
+$pyInstaller = "$installDir\python.exe"
+
+Get-VerifiedInstaller `
+    'https://www.python.org/ftp/python/3.13.17/python-3.13.17-amd64.exe' `
+    $pyInstaller `
+    '5da012101ba2e17113a9a1cd901e9ce1441086f2b7ecb5de06ec94163899a190'
+
+$arguments = @(
+    '/quiet'
+    'InstallAllUsers=1'
+    "TargetDir=$pythonDir"
+    'PrependPath=0'
+    'Include_pip=1'
+    'Include_launcher=0'
+    'Include_test=0'
+    'Include_tcltk=0'
+    'Include_doc=0'
+)
+
+$p = Start-Process $pyInstaller -ArgumentList $arguments -Wait -PassThru
+if ($p.ExitCode -ne 0) { throw "Python installer failed: $($p.ExitCode)" }
+
+# Create application environment and install dependencies
+$python = "$pythonDir\python.exe"
+& $python -m venv "$appDir\.venv"
+if ($LASTEXITCODE -ne 0) { throw 'Virtual environment creation failed' }
+
+$venvPython = "$appDir\.venv\Scripts\python.exe"
+
+& $venvPython -m pip install --no-cache-dir `
+    -r "$appDir\requirements-deploy.txt"
+
+if ($LASTEXITCODE -ne 0) { throw 'Python package installation failed' }
+
+# Download and install IIS URL Rewrite and ARR
+$rewrite = "$installDir\rewrite.msi"
+$arr = "$installDir\arr.msi"
+
+Get-VerifiedInstaller `
+    'https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi' `
+    $rewrite `
+    '37342FF2F585F263F34F48E9DE59EB1051D61015A8E967DBDE4075716230A32A'
+
+Get-VerifiedInstaller `
+    'https://download.microsoft.com/download/E/9/8/E9849D6A-020E-47E4-9FD0-A023E99B54EB/requestRouter_amd64.msi' `
+    $arr `
+    'FB61FDB7101795A34D5129CB37EEE43AB675C7ED76BA3A3B23B039D8C90C2A4B'
+
+foreach ($msi in @($rewrite,$arr)) {
+    $p = Start-Process msiexec.exe `
+        -ArgumentList "/i `"$msi`" /qn /norestart" `
+        -Wait -PassThru
+
+    if ($p.ExitCode -ne 0) {
+        throw "IIS module installation failed: $($p.ExitCode)"
+    }
+}
+
+# Enable IIS reverse proxy
+$appcmd = "$env:windir\System32\inetsrv\appcmd.exe"
+
+& $appcmd set config -section:system.webServer/proxy `
+    /enabled:true /commit:apphost
+
+if ($LASTEXITCODE -ne 0) { throw 'ARR proxy enablement failed' }
+
+# Configure a localhost-only IIS test site
+Import-Module WebAdministration
+
+$sitePath = 'C:\inetpub\LifeSciencesProxyTest'
+New-Item -ItemType Directory -Force -Path $sitePath | Out-Null
+
+$webConfig = '<configuration><system.webServer><rewrite><rules><rule name="FlaskProxy" stopProcessing="true"><match url="(.*)" /><action type="Rewrite" url="http://127.0.0.1:8080/{R:1}" appendQueryString="true" /></rule></rules></rewrite></system.webServer></configuration>'
+
+Set-Content "$sitePath\web.config" -Value $webConfig -Encoding UTF8
+
+New-Website -Name 'LifeSciences-Proxy-Test' `
+    -PhysicalPath $sitePath `
+    -IPAddress '127.0.0.1' -Port 8081 | Out-Null
+
+# Configure IIS port 80 readiness endpoint
+$readinessWebConfig = @"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <system.webServer>
+    <rewrite>
+      <rules>
+        <rule name="LifeSciences-Readiness" stopProcessing="true">
+          <match url="^ready$" />
+          <action type="Rewrite" url="http://127.0.0.1:8080/ready" />
+        </rule>
+        <rule name="LifeSciences-Health" stopProcessing="true">
+          <match url="^health$" />
+          <action type="Rewrite" url="http://127.0.0.1:8080/health" />
+        </rule>
+      </rules>
+    </rewrite>
+  </system.webServer>
+</configuration>
+"@
+
+Set-Content -Path 'C:\inetpub\wwwroot\web.config' `
+    -Value $readinessWebConfig -Encoding UTF8
+
+# Start Flask automatically after Windows boots
+$action = New-ScheduledTaskAction `
+    -Execute $venvPython `
+    -Argument "`"$appDir\run_private_app.py`"" `
+    -WorkingDirectory $appDir
+
+$trigger = New-ScheduledTaskTrigger -AtStartup
+
+$principal = New-ScheduledTaskPrincipal `
+    -UserId 'NT AUTHORITY\NETWORK SERVICE' `
+    -LogonType ServiceAccount `
+    -RunLevel Limited
+
+$settings = New-ScheduledTaskSettingsSet `
+    -RestartCount 5 `
+    -RestartInterval (New-TimeSpan -Minutes 1) `
+    -ExecutionTimeLimit ([TimeSpan]::Zero) `
+    -MultipleInstances IgnoreNew
+
+Register-ScheduledTask `
+    -TaskName 'LifeSciences-Flask-Waitress' `
+    -Action $action -Trigger $trigger `
+    -Principal $principal -Settings $settings | Out-Null
+
+Start-ScheduledTask -TaskName 'LifeSciences-Flask-Waitress'
+
+# Verify application database readiness
+$ready = $false
+
+for ($i=0; $i -lt 12; $i++) {
+    Start-Sleep -Seconds 5
+
+    try {
+        $result = Invoke-RestMethod 'http://127.0.0.1:8081/ready'
+        if ($result.status -eq 'ready') {
+            $ready = $true
+            break
+        }
+    } catch {}
+}
+
+if (-not $ready) { throw 'Flask readiness check failed' }
+
+Write-Output 'LIFESCIENCES_BOOTSTRAP_SUCCESS'
+</powershell>
