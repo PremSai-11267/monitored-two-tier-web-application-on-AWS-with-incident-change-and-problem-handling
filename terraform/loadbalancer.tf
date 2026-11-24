@@ -1,7 +1,7 @@
 
-# Public Application Load Balancer
+# Application Load Balancer for 1st Internship Project
 resource "aws_lb" "web" {
-  name               = "LifeSciences-ALB"
+  name               = "prem-intern-1st-project-alb"
   internal           = false
   load_balancer_type = "application"
 
@@ -15,13 +15,13 @@ resource "aws_lb" "web" {
   ]
 
   tags = {
-    Name = "LifeSciences-ALB"
+    Name = "prem-intern-1st-project-alb"
   }
 }
 
-# Group of Windows servers behind the ALB
+# Target Group for Windows EC2 web servers
 resource "aws_lb_target_group" "web" {
-  name        = "LifeSciences-Web-TG"
+  name        = "prem-intern-1st-project-web-tg"
   port        = 80
   protocol    = "HTTP"
   target_type = "instance"
@@ -39,11 +39,11 @@ resource "aws_lb_target_group" "web" {
   }
 
   tags = {
-    Name = "LifeSciences-Web-TG"
+    Name = "prem-intern-1st-project-web-tg"
   }
 }
 
-# Listen for browser requests on port 80
+# HTTP Listener for incoming browser requests
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.web.arn
   port              = 80

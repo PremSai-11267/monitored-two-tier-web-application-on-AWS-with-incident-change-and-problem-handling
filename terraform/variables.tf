@@ -1,30 +1,30 @@
 
 variable "aws_region" {
-  description = "AWS region for the lab"
+  description = "AWS deployment region"
   type        = string
-  default     = "ap-southeast-2"
+  default     = "us-east-1"
 }
 
 variable "project_name" {
-  description = "Project identification tag"
+  description = "Internship project name"
   type        = string
-  default     = "LifeSciences-CloudOps"
+  default     = "Prem_intern_1st_project"
 }
 
 variable "environment" {
   description = "Deployment environment"
   type        = string
-  default     = "lab"
+  default     = "internship"
 }
 
 variable "owner" {
-  description = "Resource ownership tag"
+  description = "Resource owner"
   type        = string
-  default     = "cloudops-intern"
+  default     = "PremSai"
 }
 
 variable "enable_nat_gateway" {
-  description = "Enable NAT Gateway for private subnet outbound access"
+  description = "Enable NAT Gateway for private subnet internet access"
   type        = bool
   default     = false
 }

@@ -23,3 +23,6 @@ app_backup.py
 
 # Local VS Code settings
 .vscode/
+/deployment/lifesciences-app.zip
+*.bak
+/terraform/secrets.tf

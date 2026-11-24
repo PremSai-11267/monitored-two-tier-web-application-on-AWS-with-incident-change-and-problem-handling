@@ -1,10 +1,11 @@
 terraform {
   backend "s3" {
-    bucket              = "lifesciences-tfstate-393849326496-apse2"
-    key                 = "lifesciences/lab/terraform.tfstate"
-    region              = "ap-southeast-2"
+    bucket              = "prem-intern-1st-project-tfstate-140864474143-use1"
+    key                 = "prem-intern-1st-project/terraform.tfstate"
+    region              = "us-east-1"
     encrypt             = true
     use_lockfile        = true
-    allowed_account_ids = ["393849326496"]
+    allowed_account_ids = ["140864474143"]
   }
+
 }

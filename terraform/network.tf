@@ -1,20 +1,20 @@
 
-# New VPC for the Life Sciences project
+# VPC for Prem's 1st Internship Project
 resource "aws_vpc" "main" {
   cidr_block           = "10.30.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name = "LifeSciences-VPC"
+    Name = "prem-intern-1st-project-vpc"
   }
 }
 
-# Two new public subnets
+# Two public subnets
 resource "aws_subnet" "public" {
   for_each = {
-    a = { cidr = "10.30.1.0/24", az = "ap-southeast-2a" }
-    b = { cidr = "10.30.2.0/24", az = "ap-southeast-2b" }
+    a = { cidr = "10.30.1.0/24", az = "us-east-1a" }
+    b = { cidr = "10.30.2.0/24", az = "us-east-1b" }
   }
 
   vpc_id                  = aws_vpc.main.id
@@ -23,16 +23,16 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = false
 
   tags = {
-    Name = "LifeSciences-Public-${each.key}"
+    Name = "prem-intern-1st-project-public-${each.key}"
     Tier = "public"
   }
 }
 
-# Two new private subnets
+# Two private subnets
 resource "aws_subnet" "private" {
   for_each = {
-    a = { cidr = "10.30.11.0/24", az = "ap-southeast-2a" }
-    b = { cidr = "10.30.12.0/24", az = "ap-southeast-2b" }
+    a = { cidr = "10.30.11.0/24", az = "us-east-1a" }
+    b = { cidr = "10.30.12.0/24", az = "us-east-1b" }
   }
 
   vpc_id            = aws_vpc.main.id
@@ -40,21 +40,21 @@ resource "aws_subnet" "private" {
   availability_zone = each.value.az
 
   tags = {
-    Name = "LifeSciences-Private-${each.key}"
+    Name = "prem-intern-1st-project-private-${each.key}"
     Tier = "private"
   }
 }
 
-# New Internet Gateway
+# Internet Gateway
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "LifeSciences-IGW"
+    Name = "prem-intern-1st-project-igw"
   }
 }
 
-# Public routing to the internet
+# Public route table
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
@@ -64,42 +64,44 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "LifeSciences-Public-RT"
+    Name = "prem-intern-1st-project-public-rt"
   }
 }
 
+# Associate public subnets with public route table
 resource "aws_route_table_association" "public" {
   for_each       = aws_subnet.public
   subnet_id      = each.value.id
   route_table_id = aws_route_table.public.id
 }
 
-# Private routing - no NAT Gateway
+# Private route table
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "LifeSciences-Private-RT"
+    Name = "prem-intern-1st-project-private-rt"
   }
 }
 
+# Associate private subnets with private route table
 resource "aws_route_table_association" "private" {
   for_each       = aws_subnet.private
   subnet_id      = each.value.id
   route_table_id = aws_route_table.private.id
 }
 
-# NAT Gateway public IP
+# Elastic IP for NAT Gateway
 resource "aws_eip" "nat" {
   count  = var.enable_nat_gateway ? 1 : 0
   domain = "vpc"
 
   tags = {
-    Name = "LifeSciences-NAT-EIP"
+    Name = "prem-intern-1st-project-nat-eip"
   }
 }
 
-# NAT Gateway in public subnet A
+# NAT Gateway (optional)
 resource "aws_nat_gateway" "main" {
   count         = var.enable_nat_gateway ? 1 : 0
   allocation_id = aws_eip.nat[0].id
@@ -108,11 +110,11 @@ resource "aws_nat_gateway" "main" {
   depends_on = [aws_internet_gateway.main]
 
   tags = {
-    Name = "LifeSciences-NAT"
+    Name = "prem-intern-1st-project-nat"
   }
 }
 
-# Allow private subnets to reach the internet through NAT
+# Private outbound internet route through NAT
 resource "aws_route" "private_nat" {
   count                  = var.enable_nat_gateway ? 1 : 0
   route_table_id         = aws_route_table.private.id

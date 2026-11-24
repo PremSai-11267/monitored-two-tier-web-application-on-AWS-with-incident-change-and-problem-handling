@@ -1,0 +1,116 @@
+
+# T10 - Life Sciences CloudWatch Dashboard
+
+resource "aws_cloudwatch_dashboard" "lifesciences" {
+  dashboard_name = "LifeSciences-CloudOps"
+
+  dashboard_body = jsonencode({
+    start = "-PT6H"
+
+    widgets = [
+      # Windows EC2 CPU usage
+      {
+        type   = "metric"
+        x      = 0
+        y      = 0
+        width  = 12
+        height = 6
+
+        properties = {
+          title  = "Windows EC2 - CPU Utilization"
+          region = "ap-southeast-2"
+          view   = "timeSeries"
+          period = 300
+          stat   = "Average"
+
+          metrics = [
+            [
+              "AWS/EC2",
+              "CPUUtilization",
+              "AutoScalingGroupName",
+              aws_autoscaling_group.web.name
+            ]
+          ]
+        }
+      },
+
+      # ALB server errors
+      {
+        type   = "metric"
+        x      = 12
+        y      = 0
+        width  = 12
+        height = 6
+
+        properties = {
+          title  = "ALB - HTTP 5XX Errors"
+          region = "ap-southeast-2"
+          view   = "timeSeries"
+          period = 300
+          stat   = "Sum"
+
+          metrics = [
+            [
+              "AWS/ApplicationELB",
+              "HTTPCode_ELB_5XX_Count",
+              "LoadBalancer",
+              aws_lb.web.arn_suffix
+            ]
+          ]
+        }
+      },
+
+      # RDS database CPU usage
+      {
+        type   = "metric"
+        x      = 0
+        y      = 6
+        width  = 12
+        height = 6
+
+        properties = {
+          title  = "PostgreSQL - CPU Utilization"
+          region = "ap-southeast-2"
+          view   = "timeSeries"
+          period = 300
+          stat   = "Average"
+
+          metrics = [
+            [
+              "AWS/RDS",
+              "CPUUtilization",
+              "DBInstanceIdentifier",
+              aws_db_instance.postgres.identifier
+            ]
+          ]
+        }
+      },
+
+      # RDS available storage
+      {
+        type   = "metric"
+        x      = 12
+        y      = 6
+        width  = 12
+        height = 6
+
+        properties = {
+          title  = "PostgreSQL - Free Storage"
+          region = "ap-southeast-2"
+          view   = "timeSeries"
+          period = 300
+          stat   = "Average"
+
+          metrics = [
+            [
+              "AWS/RDS",
+              "FreeStorageSpace",
+              "DBInstanceIdentifier",
+              aws_db_instance.postgres.identifier
+            ]
+          ]
+        }
+      }
+    ]
+  })
+}

@@ -1,0 +1,69 @@
+locals {
+  lifesciences_patch_group           = "LifeSciences-Windows-Web"
+  lifesciences_maintenance_window_id = "mw-0d72eff402735d9e8"
+}
+
+
+data "aws_ssm_patch_baseline" "lifesciences_windows" {
+  owner            = "Self"
+  name_prefix      = "LifeSciences-Windows-PatchBaseline"
+  operating_system = "WINDOWS"
+}
+
+
+resource "aws_ssm_patch_group" "lifesciences_web" {
+  baseline_id = data.aws_ssm_patch_baseline.lifesciences_windows.id
+  patch_group = local.lifesciences_patch_group
+}
+
+
+resource "aws_ssm_maintenance_window_target" "lifesciences_web" {
+  window_id     = local.lifesciences_maintenance_window_id
+  name          = "LifeSciences-Windows-Web-Targets"
+  description   = "Life Sciences lab Windows web servers only"
+  resource_type = "INSTANCE"
+
+  targets {
+    key    = "tag:PatchGroup"
+    values = [local.lifesciences_patch_group]
+  }
+}
+
+
+
+resource "aws_ssm_maintenance_window_task" "lifesciences_scan" {
+  window_id   = local.lifesciences_maintenance_window_id
+  name        = "LifeSciences-Windows-Patch-Scan"
+  description = "Scan Windows servers for missing patches"
+
+  task_type = "RUN_COMMAND"
+  task_arn  = "AWS-RunPatchBaseline"
+
+  priority        = 1
+  max_concurrency = "1"
+  max_errors      = "1"
+  cutoff_behavior = "CANCEL_TASK"
+
+  targets {
+    key = "WindowTargetIds"
+    values = [
+      aws_ssm_maintenance_window_target.lifesciences_web.id
+    ]
+  }
+
+  task_invocation_parameters {
+    run_command_parameters {
+      timeout_seconds = 600
+
+      parameter {
+        name   = "Operation"
+        values = ["Scan"]
+      }
+
+      parameter {
+        name   = "RebootOption"
+        values = ["NoReboot"]
+      }
+    }
+  }
+}

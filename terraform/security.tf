@@ -1,33 +1,36 @@
 
-# Three security groups inside our new VPC
+# Security Groups for 1st Internship Project
 
+# Application Load Balancer Security Group
 resource "aws_security_group" "alb" {
-  name        = "LifeSciences-ALB-SG"
-  description = "Security group for public ALB"
+  name        = "prem-intern-1st-project-alb-sg"
+  description = "Security group for Prem internship project ALB"
   vpc_id      = aws_vpc.main.id
 
   tags = {
-    Name = "LifeSciences-ALB-SG"
+    Name = "prem-intern-1st-project-alb-sg"
   }
 }
 
+# Windows EC2 Web Server Security Group
 resource "aws_security_group" "web" {
-  name        = "LifeSciences-Web-SG"
-  description = "Security group for Windows web servers"
+  name        = "prem-intern-1st-project-web-sg"
+  description = "Security group for internship Windows web servers"
   vpc_id      = aws_vpc.main.id
 
   tags = {
-    Name = "LifeSciences-Web-SG"
+    Name = "prem-intern-1st-project-web-sg"
   }
 }
 
+# PostgreSQL RDS Security Group
 resource "aws_security_group" "db" {
-  name        = "LifeSciences-DB-SG"
-  description = "Security group for PostgreSQL RDS"
+  name        = "prem-intern-1st-project-db-sg"
+  description = "Security group for internship PostgreSQL RDS"
   vpc_id      = aws_vpc.main.id
 
   tags = {
-    Name = "LifeSciences-DB-SG"
+    Name = "prem-intern-1st-project-db-sg"
   }
 }
 
@@ -49,7 +52,7 @@ resource "aws_vpc_security_group_ingress_rule" "web_http" {
   to_port                      = 80
 }
 
-# Windows web servers -> PostgreSQL on 5432
+# Windows web servers -> PostgreSQL on port 5432
 resource "aws_vpc_security_group_ingress_rule" "db_postgres" {
   security_group_id            = aws_security_group.db.id
   referenced_security_group_id = aws_security_group.web.id
@@ -58,7 +61,7 @@ resource "aws_vpc_security_group_ingress_rule" "db_postgres" {
   to_port                      = 5432
 }
 
-# ALB outbound to web servers
+# ALB outbound to Windows web servers
 resource "aws_vpc_security_group_egress_rule" "alb_to_web" {
   security_group_id            = aws_security_group.alb.id
   referenced_security_group_id = aws_security_group.web.id
@@ -67,7 +70,7 @@ resource "aws_vpc_security_group_egress_rule" "alb_to_web" {
   to_port                      = 80
 }
 
-# Web servers outbound to PostgreSQL
+# Windows web servers outbound to PostgreSQL
 resource "aws_vpc_security_group_egress_rule" "web_to_db" {
   security_group_id            = aws_security_group.web.id
   referenced_security_group_id = aws_security_group.db.id
@@ -76,7 +79,7 @@ resource "aws_vpc_security_group_egress_rule" "web_to_db" {
   to_port                      = 5432
 }
 
-# Web servers outbound HTTPS for AWS services and updates
+# Windows web servers outbound HTTPS
 resource "aws_vpc_security_group_egress_rule" "web_https" {
   security_group_id = aws_security_group.web.id
   cidr_ipv4         = "0.0.0.0/0"
@@ -84,7 +87,8 @@ resource "aws_vpc_security_group_egress_rule" "web_https" {
   from_port         = 443
   to_port           = 443
 }
-# Windows web servers outbound HTTP for Windows Update downloads
+
+# Windows web servers outbound HTTP for updates
 resource "aws_vpc_security_group_egress_rule" "web_http_updates" {
   security_group_id = aws_security_group.web.id
   cidr_ipv4         = "0.0.0.0/0"
