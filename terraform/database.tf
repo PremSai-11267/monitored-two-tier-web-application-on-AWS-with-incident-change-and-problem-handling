@@ -1,8 +1,9 @@
 
-# PostgreSQL database for Life Sciences
-# Private subnets for Amazon RDS PostgreSQL
+# PostgreSQL database for Prem's 1st Internship Project
+
+# DB subnet group using private subnets
 resource "aws_db_subnet_group" "main" {
-  name = "lifesciences-db-subnet-group"
+  name = "prem-intern-1st-project-db-subnet-group"
 
   subnet_ids = [
     aws_subnet.private["a"].id,
@@ -10,15 +11,17 @@ resource "aws_db_subnet_group" "main" {
   ]
 
   tags = {
-    Name = "LifeSciences-DB-Subnet-Group"
+    Name = "prem-intern-1st-project-db-subnet-group"
   }
 }
+
+# Amazon RDS PostgreSQL database
 resource "aws_db_instance" "postgres" {
-  identifier     = "lifesciences-postgres-lab"
+  identifier     = "prem-intern-1st-project-postgres"
   engine         = "postgres"
   instance_class = "db.t4g.micro"
 
-  db_name  = "lifesciences"
+  db_name  = "prem_intern_p1"
   username = "dbadmin"
 
   # AWS manages the master password
@@ -35,13 +38,13 @@ resource "aws_db_instance" "postgres" {
   publicly_accessible    = false
   port                   = 5432
 
-  # Lab configuration
+  # Project configuration
   multi_az                = false
   backup_retention_period = 1
   deletion_protection     = false
   skip_final_snapshot     = true
 
   tags = {
-    Name = "LifeSciences-PostgreSQL"
+    Name = "prem-intern-1st-project-postgres"
   }
 }

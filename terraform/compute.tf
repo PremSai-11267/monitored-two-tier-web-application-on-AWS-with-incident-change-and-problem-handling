@@ -1,4 +1,8 @@
 
+# ============================================================
+# 1st Internship Project - Windows EC2 and Auto Scaling
+# ============================================================
+
 # Find the latest Windows Server 2022 AMI
 data "aws_ssm_parameter" "windows_ami" {
   name = "/aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base"
@@ -6,7 +10,7 @@ data "aws_ssm_parameter" "windows_ami" {
 
 # Windows EC2 Launch Template
 resource "aws_launch_template" "web" {
-  name_prefix   = "LifeSciences-Web-"
+  name_prefix   = "prem-intern-1st-project-web-"
   image_id      = data.aws_ssm_parameter.windows_ami.value
   instance_type = "m7i-flex.large"
 
@@ -25,27 +29,29 @@ resource "aws_launch_template" "web" {
     http_tokens   = "required"
   }
 
+  # Tags for EC2 instances launched by the ASG
   tag_specifications {
     resource_type = "instance"
 
     tags = {
-      Name        = "LifeSciences-Web"
-      Project     = var.project_name
-      Environment = var.environment
-      Owner       = var.owner
+      Name      = "prem-intern-1st-project-web"
+      Project   = var.project_name
+      Owner     = var.owner
+      ManagedBy = "Terraform"
+      Purpose   = "CloudOpsInternship"
     }
   }
 
   tags = {
-    Name = "LifeSciences-Web-Template"
+    Name = "prem-intern-1st-project-web-template"
   }
 }
 
 # Auto Scaling Group
 resource "aws_autoscaling_group" "web" {
-  name = "LifeSciences-Web-ASG"
+  name = "prem-intern-1st-project-web-asg"
 
-  # Connect Windows EC2 instances to the ALB Target Group
+  # Connect Windows EC2 instances to ALB Target Group
   target_group_arns = [
     aws_lb_target_group.web.arn
   ]
@@ -56,9 +62,10 @@ resource "aws_autoscaling_group" "web" {
     aws_subnet.private["b"].id
   ]
 
-  min_size         = 2
+  # Cost-controlled initial configuration
+  min_size         = 0
   max_size         = 2
-  desired_capacity = 2
+  desired_capacity = 1
 
   health_check_type         = "ELB"
   health_check_grace_period = 600
@@ -68,20 +75,47 @@ resource "aws_autoscaling_group" "web" {
     version = "$Latest"
   }
 
+  # Resource identification
+  tag {
+    key                 = "Name"
+    value               = "prem-intern-1st-project-web"
+    propagate_at_launch = true
+  }
+
   tag {
     key                 = "Project"
     value               = var.project_name
     propagate_at_launch = true
   }
+
   tag {
-    key                 = "Environment"
-    value               = var.environment
+    key                 = "Owner"
+    value               = var.owner
     propagate_at_launch = true
   }
 
   tag {
+    key                 = "ManagedBy"
+    value               = "Terraform"
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "Purpose"
+    value               = "CloudOpsInternship"
+    propagate_at_launch = true
+  }
+
+  # Patch Manager tag
+  tag {
     key                 = "PatchGroup"
-    value               = "LifeSciences-Windows-Web"
+    value               = "prem-intern-1st-project-windows-web"
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "Environment"
+    value               = var.environment
     propagate_at_launch = true
   }
 }
